@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1603289380 source:c:\users\pro\desktop\c++\stepic\programming on c++\tasks(with_debagging)\main.cpp
+	<iostream>
+	<cstring>
+

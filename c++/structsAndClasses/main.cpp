@@ -4,13 +4,6 @@
 #include <algorithm>
 using namespace std;
 
-/*
-“”“ ѕќЋ≈«Ќџ≈ »«ћ≈Ќ≈Ќ»я ƒќ’”я
-
-TODO: DELETE ME
-
-
-*/
 
 //*************************************************************************************************************************************************
 struct Number;
@@ -26,13 +19,17 @@ struct Expression
 {
     virtual double evaluate() const = 0;
     virtual void visit(Visitor * vistitor) const = 0;
-    virtual ~Expression() { }
+    virtual ~Expression() {}
 };
 
 struct Number : Expression
 {
-    Number(double value);
-    double evaluate() const;
+    Number(double value) : value(value) {}
+    virtual ~Number() {}
+    double evaluate() const
+    {
+        return value;
+    }
 
     double get_value() const { return value; }
 
@@ -44,9 +41,27 @@ private:
 
 struct BinaryOperation : Expression
 {
-    BinaryOperation(Expression const * left, char op, Expression const * right);
-    ~BinaryOperation();
-    double evaluate() const;
+    BinaryOperation(Expression const * left, char op, Expression const * right) : left(left), right(right), op(op) {}
+    ~BinaryOperation()
+    {
+        delete left;
+        delete right;
+    };
+    double evaluate() const
+    {
+        switch(op)
+        {
+        case '+':
+            return left->evaluate() + right->evaluate();
+        case '-':
+            return left->evaluate() - right->evaluate();
+        case '*':
+            return left->evaluate() * right->evaluate();
+        case '/':
+            return left->evaluate() / right->evaluate();
+        }
+        return 0;
+    }
 
     Expression const * get_left() const { return left; }
     Expression const * get_right() const { return right; }
@@ -63,12 +78,16 @@ private:
 struct PrintVisitor : Visitor {
     void visitNumber(Number const * number)
     {
-        /* ... */
+        cout << number->get_value();
     }
 
     void visitBinaryOperation(BinaryOperation const * bop)
     {
-        /* ... */
+        cout << "(";
+        bop->get_left()->visit(this);
+        cout << " " << bop->get_op() << " ";
+        bop->get_right()->visit(this);
+        cout << ")";
     }
 };
 
@@ -92,6 +111,19 @@ int main()
     cout << "bool = " << check_equals(num1, num2) << endl;
     cout << "bool = " << check_equals(num2, num2) << endl;*/
 
+    //*************************************************************************************************************************************************
+    //¬аш класс должен печатать (использу€ std::cout) текстовое представление арифметического выражени€. “.е. дл€ объекта класса Number он должен напечатать число,
+    //которое в нем хранитс€, а дл€ объекта класса BinaryOperation он должен напечатать левый операнд, затем операцию, а затем правый операнд.”чтите, что
+    //операции + и - имеют меньший приоритет, чем операции * и /, т. е. возможно вам придетс€ печатать дополнительные круглые скобки, чтобы сохранить правильный
+    //пор€док операций.
+    Expression * num = new Number(5);
+    PrintVisitor  visitor;
+    num->visit(&visitor);
+    cout << endl;
+    Expression * expr = new BinaryOperation(new Number(1), '+', new Number(2));
+    Expression * expr2 = new BinaryOperation(expr, '*', new Number(3));
+    expr2->visit(&visitor);
+    cout << " = " << expr2->evaluate();
 
 
     return 0;

@@ -6,90 +6,100 @@ using namespace std;
 
 
 //*************************************************************************************************************************************************
-struct Number;
-struct BinaryOperation;
-
-struct Visitor {
-    virtual void visitNumber(Number const * number) = 0;
-    virtual void visitBinaryOperation(BinaryOperation const * operation) = 0;
-    virtual ~Visitor() { }
-};
-
-struct Expression
+struct Rational
 {
-    virtual double evaluate() const = 0;
-    virtual void visit(Visitor * vistitor) const = 0;
-    virtual ~Expression() {}
-};
+    Rational(int numerator = 0, int denominator = 1) : numerator_(numerator), denominator_(denominator) {}
 
-struct Number : Expression
-{
-    Number(double value) : value(value) {}
-    virtual ~Number() {}
-    double evaluate() const
+    void add(Rational rational)
     {
-        return value;
-    }
-
-    double get_value() const { return value; }
-
-    void visit(Visitor * visitor) const { visitor->visitNumber(this); }
-
-private:
-    double value;
-};
-
-struct BinaryOperation : Expression
-{
-    BinaryOperation(Expression const * left, char op, Expression const * right) : left(left), right(right), op(op) {}
-    ~BinaryOperation()
-    {
-        delete left;
-        delete right;
-    };
-    double evaluate() const
-    {
-        switch(op)
+        if(this->denominator_ == rational.denominator_)
         {
-        case '+':
-            return left->evaluate() + right->evaluate();
-        case '-':
-            return left->evaluate() - right->evaluate();
-        case '*':
-            return left->evaluate() * right->evaluate();
-        case '/':
-            return left->evaluate() / right->evaluate();
+            this->numerator_ += rational.numerator_;
         }
-        return 0;
+        else
+        {
+            this->numerator_ = this->numerator_ * rational.denominator_ + rational.numerator_ * this->denominator_;
+            this->denominator_ = this->denominator_ * rational.denominator_;
+        }
     }
-
-    Expression const * get_left() const { return left; }
-    Expression const * get_right() const { return right; }
-    char get_op() const { return op; }
-
-    void visit(Visitor * visitor) const { visitor->visitBinaryOperation(this); }
-
+    void sub(Rational rational)
+    {
+        if(this->denominator_ == rational.denominator_)
+        {
+            this->numerator_ -= rational.numerator_;
+        }
+        else
+        {
+            this->numerator_ = this->numerator_ * rational.denominator_ - rational.numerator_ * this->denominator_;
+            this->denominator_ = this->denominator_ * rational.denominator_;
+        }
+    }
+    void mul(Rational rational)
+    {
+        this->numerator_ *= rational.numerator_;
+        this->denominator_ *= rational.denominator_;
+    }
+    void div(Rational rational)
+    {
+        rational.inv();
+        this->numerator_ *= rational.numerator_;
+        this->denominator_ *= rational.denominator_;
+    }
+    void neg()
+    {
+        numerator_ = -numerator_;
+    }
+    void inv()
+    {
+        int temp = numerator_;
+        numerator_ = denominator_;
+        denominator_ = temp;
+    }
+    double to_double() const
+    {
+        return (double)numerator_ / denominator_;
+    }
+//--------------------------------------------
+    Rational operator-() const
+    {
+        Rational temp(1);
+        temp.numerator_ = (-1) * numerator_;
+        temp.denominator_ = denominator_;
+        return temp;
+    }
+    Rational operator+() const
+    {
+        return *this;
+    }
 private:
-    Expression const * left;
-    Expression const * right;
-    char op;
+    int numerator_;
+    int denominator_;
 };
 
-struct PrintVisitor : Visitor {
-    void visitNumber(Number const * number)
-    {
-        cout << number->get_value();
-    }
 
-    void visitBinaryOperation(BinaryOperation const * bop)
-    {
-        cout << "(";
-        bop->get_left()->visit(this);
-        cout << " " << bop->get_op() << " ";
-        bop->get_right()->visit(this);
-        cout << ")";
-    }
-};
+Rational & operator+=(Rational & rational, Rational const & number)
+{
+    rational.add(number);
+    return rational;
+}
+
+Rational & operator-=(Rational & rational, Rational const & number)
+{
+    rational.sub(number);
+    return rational;
+}
+
+Rational & operator*=(Rational & rational, Rational const & number)
+{
+    rational.mul(number);
+    return rational;
+}
+
+Rational & operator/=(Rational & rational, Rational const & number)
+{
+    rational.div(number);
+    return rational;
+}
 
 
 //*****************************************************************************************************
@@ -98,32 +108,28 @@ struct PrintVisitor : Visitor {
 
 int main()
 {
-
-    //Вам требуется реализовать функцию, которая принимает на вход два указателя на базовый класс Expression, и возвращает true, если оба указателя
-    //указывают на самом деле на объекты одного и того же класса, и false в противном случае (т.е. если оба указателя указывают на BinaryOperation, то
-    //возвращается true, а если один из них указывает на Number, а второй на BinaryOperation, то false).
-    /*Expression * sube1 = new BinaryOperation(new Number(4.5), '*', new Number(5));
-    Expression * sube2 = new BinaryOperation(new Number(4), '+', new Number(9));
-    Expression * num1 = new Number(6);
-    Expression * num2 = new Number(9);
-    cout << "bool = " << check_equals(sube1, sube2) << endl;
-    cout << "bool = " << check_equals(sube2, sube1) << endl;
-    cout << "bool = " << check_equals(num1, num2) << endl;
-    cout << "bool = " << check_equals(num2, num2) << endl;*/
-
-    //*************************************************************************************************************************************************
-    //Ваш класс должен печатать (используя std::cout) текстовое представление арифметического выражения. Т.е. для объекта класса Number он должен напечатать число,
-    //которое в нем хранится, а для объекта класса BinaryOperation он должен напечатать левый операнд, затем операцию, а затем правый операнд.Учтите, что
-    //операции + и - имеют меньший приоритет, чем операции * и /, т. е. возможно вам придется печатать дополнительные круглые скобки, чтобы сохранить правильный
-    //порядок операций.
-    Expression * num = new Number(5);
-    PrintVisitor  visitor;
-    num->visit(&visitor);
-    cout << endl;
-    Expression * expr = new BinaryOperation(new Number(1), '+', new Number(2));
-    Expression * expr2 = new BinaryOperation(expr, '*', new Number(3));
-    expr2->visit(&visitor);
-    cout << " = " << expr2->evaluate();
+    //Вам дан класс Rational, который описывает рациональное число. В нем определены методы add, sub, mul и div, которые прибавляют к нему число, отнимают
+    //число, умножают на число и делят на число соответственно. Кроме того в нем определен метод neg, который меняет знак на противоположный.
+    //Вам нужно определить операторы +=, -=, *=, /= для класса Rational так, чтобы они могли принимать в качестве аргументов и объекты типа Rational и целые
+    //числа. Кроме того вам необходимо определить операторы унарного минуса и плюса для класса Rational.
+    Rational var1(2, 4);
+    Rational var2(2, 5);
+    var1.add(var2);
+    cout << var1.to_double() << endl;
+    Rational var3(3, 4);
+    Rational var4(1, 4);
+    var4.sub(var3);
+    cout << var4.to_double() << endl;
+    Rational var5(2, 4);
+    Rational var6(3, 4);
+    var5.mul(var6);
+    cout << var5.to_double() << endl;
+    Rational var7(5, 6);
+    Rational var8(5, 3);
+    var7.div(var8);
+    cout << var7.to_double() << endl;
+    Rational a(1, 4);
+    if ((-a).to_double() != 1.0 / 4.0) cout << (-a).to_double();
 
 
     return 0;

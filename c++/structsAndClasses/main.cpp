@@ -71,11 +71,15 @@ struct Rational
     {
         return *this;
     }
+    //------------------------------------------
+
+
+
+    //--------------------------------------------
 private:
     int numerator_;
     int denominator_;
 };
-
 
 Rational & operator+=(Rational & rational, Rational const & number)
 {
@@ -101,6 +105,26 @@ Rational & operator/=(Rational & rational, Rational const & number)
     return rational;
 }
 
+Rational operator+(Rational number, Rational const & rational)
+{
+    return (number += rational);
+}
+Rational operator-(Rational number, Rational const & rational)
+{
+    return (number -= rational);
+}
+Rational operator*(Rational number, Rational const & rational)
+{
+    return (number *= rational);
+}
+Rational operator/(Rational number, Rational const & rational)
+{
+    return (number /= rational);
+
+}
+
+
+
 
 //*****************************************************************************************************
 
@@ -108,28 +132,15 @@ Rational & operator/=(Rational & rational, Rational const & number)
 
 int main()
 {
-    //Вам дан класс Rational, который описывает рациональное число. В нем определены методы add, sub, mul и div, которые прибавляют к нему число, отнимают
-    //число, умножают на число и делят на число соответственно. Кроме того в нем определен метод neg, который меняет знак на противоположный.
-    //Вам нужно определить операторы +=, -=, *=, /= для класса Rational так, чтобы они могли принимать в качестве аргументов и объекты типа Rational и целые
-    //числа. Кроме того вам необходимо определить операторы унарного минуса и плюса для класса Rational.
-    Rational var1(2, 4);
-    Rational var2(2, 5);
-    var1.add(var2);
-    cout << var1.to_double() << endl;
-    Rational var3(3, 4);
-    Rational var4(1, 4);
-    var4.sub(var3);
-    cout << var4.to_double() << endl;
-    Rational var5(2, 4);
-    Rational var6(3, 4);
-    var5.mul(var6);
-    cout << var5.to_double() << endl;
-    Rational var7(5, 6);
-    Rational var8(5, 3);
-    var7.div(var8);
-    cout << var7.to_double() << endl;
-    Rational a(1, 4);
-    if ((-a).to_double() != 1.0 / 4.0) cout << (-a).to_double();
+    //Определите для класса Rational операторы сложения, вычитания, умножения и деления, так чтобы объекты типа Rational можно было складывать
+    //(вычитать, умножать и делить) не только друг с другом но и с целыми числами.
+    Rational var1(2, 4), var2(2, 5), result;
+    int temp = 4;
+    result = var2 / 2 / 2;
+    cout << result.to_double() << endl;
+    result = temp / var1;
+    cout << result.to_double() << endl;
+
 
 
     return 0;

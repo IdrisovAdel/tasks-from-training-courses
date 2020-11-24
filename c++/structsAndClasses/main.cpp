@@ -59,6 +59,10 @@ struct Rational
     {
         return (double)numerator_ / denominator_;
     }
+    double fromRationalToDouble()const
+    {
+        return (double)numerator_ / denominator_;
+    }
 //--------------------------------------------
     Rational operator-() const
     {
@@ -71,16 +75,11 @@ struct Rational
     {
         return *this;
     }
-    //------------------------------------------
-
-
-
-    //--------------------------------------------
 private:
     int numerator_;
     int denominator_;
 };
-
+//---------------------------------------------------------------
 Rational & operator+=(Rational & rational, Rational const & number)
 {
     rational.add(number);
@@ -104,7 +103,7 @@ Rational & operator/=(Rational & rational, Rational const & number)
     rational.div(number);
     return rational;
 }
-
+//-----------------------------------------------------------------
 Rational operator+(Rational number, Rational const & rational)
 {
     return (number += rational);
@@ -120,10 +119,38 @@ Rational operator*(Rational number, Rational const & rational)
 Rational operator/(Rational number, Rational const & rational)
 {
     return (number /= rational);
+}
+//-----------------------------------------------------
 
+bool operator==(Rational const & number, Rational const & rational)
+{
+    return (number.fromRationalToDouble() == rational.fromRationalToDouble() ? true : false);
 }
 
+bool operator!=(Rational const & number, Rational const & rational)
+{
+    return !(number == rational);
+}
 
+bool operator<(Rational const & number, Rational const & rational)
+{
+    return (number.fromRationalToDouble() < rational.fromRationalToDouble() ? true : false);
+}
+
+bool operator>(Rational const & number, Rational const & rational)
+{
+    return (rational < number);
+}
+
+bool operator<=(Rational const & number, Rational const & rational)
+{
+    return ((number < rational) || (number == rational));
+}
+
+bool operator>=(Rational const & number, Rational const & rational)
+{
+    return (!(number < rational) || (number == rational));
+}
 
 
 //*****************************************************************************************************
@@ -132,16 +159,12 @@ Rational operator/(Rational number, Rational const & rational)
 
 int main()
 {
-    //Определите для класса Rational операторы сложения, вычитания, умножения и деления, так чтобы объекты типа Rational можно было складывать
-    //(вычитать, умножать и делить) не только друг с другом но и с целыми числами.
-    Rational var1(2, 4), var2(2, 5), result;
-    int temp = 4;
-    result = var2 / 2 / 2;
-    cout << result.to_double() << endl;
-    result = temp / var1;
-    cout << result.to_double() << endl;
-
-
+    //Еще одна важная группа операторов, которые полезно реализовать для класса рациональных чисел — это операторы сравнения. Реализуйте
+    //операторы <, <=, >, >=, ==, != для класса Rational так, чтобы можно было сравнивать объекты класса Rational не только друг с другом, но и с целыми числами.
+    //При решении задания не используйте метод to_double, он введен в класс, в первую очередь, для удобства тестирования. Вы можете определять любые
+    //вспомогательные методы или функции если необходимо.
+    Rational temp1(2, 4), temp2(3, 4);
+    cout << (temp1 > temp2) << endl;
 
     return 0;
 }

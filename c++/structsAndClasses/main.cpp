@@ -5,175 +5,111 @@
 using namespace std;
 
 
-//*************************************************************************************************************************************************
-struct Rational
+struct String
 {
-    Rational(int numerator = 0, int denominator = 1) : numerator_(numerator), denominator_(denominator) {}
+    String(const char *str = "") : Size(strlen(str)), str(new char [Size + 1])
+    {
+        strcpy(this->str, str);
+    }
 
-    void add(Rational rational)
+    String(size_t n, char c) : Size(n), str(new char [Size + 1])
     {
-        if(this->denominator_ == rational.denominator_)
+        unsigned temp = 0;
+        for( ; temp < n; ++temp)
         {
-            this->numerator_ += rational.numerator_;
+            str[temp] = c;
         }
-        else
-        {
-            this->numerator_ = this->numerator_ * rational.denominator_ + rational.numerator_ * this->denominator_;
-            this->denominator_ = this->denominator_ * rational.denominator_;
-        }
+        str[temp] = '\0';
     }
-    void sub(Rational rational)
+
+    String(const String &other) : Size(other.Size), str(new char [Size + 1])
     {
-        if(this->denominator_ == rational.denominator_)
+        for(unsigned temp = 0; temp < Size + 1; ++temp)
         {
-            this->numerator_ -= rational.numerator_;
-        }
-        else
-        {
-            this->numerator_ = this->numerator_ * rational.denominator_ - rational.numerator_ * this->denominator_;
-            this->denominator_ = this->denominator_ * rational.denominator_;
+            str[temp] = other.str[temp];
         }
     }
-    void mul(Rational rational)
+
+    ~String()
     {
-        this->numerator_ *= rational.numerator_;
-        this->denominator_ *= rational.denominator_;
+        delete[] str;
     }
-    void div(Rational rational)
+
+    String & operator=(const String &other)
     {
-        rational.inv();
-        this->numerator_ *= rational.numerator_;
-        this->denominator_ *= rational.denominator_;
-    }
-    void neg()
-    {
-        numerator_ = -numerator_;
-    }
-    void inv()
-    {
-        int temp = numerator_;
-        numerator_ = denominator_;
-        denominator_ = temp;
-    }
-    double to_double() const
-    {
-        return (double)numerator_ / denominator_;
-    }
-    double fromRationalToDouble()const
-    {
-        return (double)numerator_ / denominator_;
-    }
-    operator double() const
-    {
-        return this->to_double();
-    }
-//--------------------------------------------
-    Rational operator-() const
-    {
-        Rational temp(1);
-        temp.numerator_ = (-1) * numerator_;
-        temp.denominator_ = denominator_;
-        return temp;
-    }
-    Rational operator+() const
-    {
+        if(&other != this)
+        {
+            String temp(other);
+            (*this).Swap(temp);
+        }
         return *this;
     }
-private:
-    int numerator_;
-    int denominator_;
+
+    void Swap(String &other)
+    {
+        swap(this->Size, other.Size);
+        swap(this->str, other.str);
+    }
+
+    void append(String &other)
+    {
+        char * str1 = new char[Size + other.Size + 1];
+        strcpy(str1, str);
+        strcat(str1, other.str);
+        delete[] str;
+        str = new char[Size + other.Size + 1];
+        Size += other.Size;
+        strcpy(str, str1);
+        delete[] str1;
+    }
+    class Proxy
+    {
+    public:
+        Proxy(String const & line, int const from) : var1(line), from(from)
+        {
+        }
+
+        String operator[](int to)
+        {
+            String substring(to - from, ' ');
+            int i = 0;
+            for(int iter = from; iter < to; ++iter)
+            {
+                substring.str[i++] = var1.str[iter];
+            }
+            substring.Size = to - from;
+            return substring;
+        }
+        const String & var1;
+        int from;
+    };
+    Proxy operator[](int from) const
+    {
+        Proxy temp1(*this, from);
+        return temp1;
+    }
+    size_t Size;
+    char *str;
 };
-//---------------------------------------------------------------
-Rational & operator+=(Rational & rational, Rational const & number)
-{
-    rational.add(number);
-    return rational;
-}
-
-Rational & operator-=(Rational & rational, Rational const & number)
-{
-    rational.sub(number);
-    return rational;
-}
-
-Rational & operator*=(Rational & rational, Rational const & number)
-{
-    rational.mul(number);
-    return rational;
-}
-
-Rational & operator/=(Rational & rational, Rational const & number)
-{
-    rational.div(number);
-    return rational;
-}
-//-----------------------------------------------------------------
-Rational operator+(Rational number, Rational const & rational)
-{
-    return (number += rational);
-}
-Rational operator-(Rational number, Rational const & rational)
-{
-    return (number -= rational);
-}
-Rational operator*(Rational number, Rational const & rational)
-{
-    return (number *= rational);
-}
-Rational operator/(Rational number, Rational const & rational)
-{
-    return (number /= rational);
-}
-//-----------------------------------------------------
-
-bool operator==(Rational const & number, Rational const & rational)
-{
-    return (number.fromRationalToDouble() == rational.fromRationalToDouble() ? true : false);
-}
-
-bool operator!=(Rational const & number, Rational const & rational)
-{
-    return !(number == rational);
-}
-
-bool operator<(Rational const & number, Rational const & rational)
-{
-    return (number.fromRationalToDouble() < rational.fromRationalToDouble() ? true : false);
-}
-
-bool operator>(Rational const & number, Rational const & rational)
-{
-    return (rational < number);
-}
-
-bool operator<=(Rational const & number, Rational const & rational)
-{
-    return ((number < rational) || (number == rational));
-}
-
-bool operator>=(Rational const & number, Rational const & rational)
-{
-    return (!(number < rational) || (number == rational));
-}
 
 
-//*****************************************************************************************************
+
 
 int main()
 {
-    //Еще одна важная группа операторов, которые полезно реализовать для класса рациональных чисел — это операторы сравнения. Реализуйте
-    //операторы <, <=, >, >=, ==, != для класса Rational так, чтобы можно было сравнивать объекты класса Rational не только друг с другом, но и с целыми числами.
-    //При решении задания не используйте метод to_double, он введен в класс, в первую очередь, для удобства тестирования. Вы можете определять любые
-    //вспомогательные методы или функции если необходимо.
-    /*Rational temp1(2, 4), temp2(3, 4);
-    cout << (temp1 > temp2) << endl;*/
+    //В этой задаче вам требуется реализовать оператор [] для уже известного вам класса String. Однако на этот раз оператор должен реализовывать нестандартное
+    //поведение: оператор нужно реализовать таким образом, чтобы для объекта str класса String можно было писать str[i][j] и это выражение возвращало подстроку
+    //начинающуюся в позиции i (считая с 0) и заканчивающуюся в позиции j (не включая). Например: String const hello("hello"); String const hell = hello[0][4];
+    // теперь в hell хранится подстрока "hell". String const ell  = hello[1][4]; // теперь в ell хранится подстрока "ell". Обратите внимание, что i может
+    //равняться j, в этом случае результатом должна быть пустая строка. Гарантируется, что i никогда не будет больше j, и они не будут выходить за пределы
+    //длины строки.
+    String hello = "hello", var2;
+    var2 = hello[1][5];
+    String const hell = hello[0][4];
+    cout << hell.Size << ' ' << hell.str << endl;
 
 
-    //Добавьте в класс Rational оператор приведения к double. Все операторы из предыдущих заданий отсутствуют и реализовывать их не нужно. Метод to_double
-    //можно использовать в этом задании.Важное замечание: добавлять оператор преобразования к double в класс Rational не самая удачная идея, например, потому,
-    //что при таком преобразовании может происходить потеря точности. Эта задача дана исключительно с целью ознакомления с правильным порядком перегрузки таких
-    //операторов.
+
 
     return 0;
 }
-

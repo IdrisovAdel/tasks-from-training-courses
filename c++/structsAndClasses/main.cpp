@@ -9,16 +9,16 @@ using namespace std;
 struct Number;
 struct BinaryOperation;
 
-struct Visitor {
+/*struct Visitor {
     virtual void visitNumber(Number const * number) = 0;
     virtual void visitBinaryOperation(BinaryOperation const * operation) = 0;
     virtual ~Visitor() { }
-};
+};*/
 
 struct Expression
 {
     virtual double evaluate() const = 0;
-    virtual void visit(Visitor * vistitor) const = 0;
+    //virtual void visit(Visitor * vistitor) const = 0;
     virtual ~Expression() {}
 };
 
@@ -33,7 +33,7 @@ struct Number : Expression
 
     double get_value() const { return value; }
 
-    void visit(Visitor * visitor) const { visitor->visitNumber(this); }
+    //void visit(Visitor * visitor) const { visitor->visitNumber(this); }
 
 private:
     double value;
@@ -67,7 +67,7 @@ struct BinaryOperation : Expression
     Expression const * get_right() const { return right; }
     char get_op() const { return op; }
 
-    void visit(Visitor * visitor) const { visitor->visitBinaryOperation(this); }
+    //void visit(Visitor * visitor) const { visitor->visitBinaryOperation(this); }
 
 private:
     Expression const * left;
@@ -75,7 +75,7 @@ private:
     char op;
 };
 
-struct PrintVisitor : Visitor {
+/*struct PrintVisitor : Visitor {
     void visitNumber(Number const * number)
     {
         cout << number->get_value();
@@ -89,42 +89,82 @@ struct PrintVisitor : Visitor {
         bop->get_right()->visit(this);
         cout << ")";
     }
-};
-
-
+};*/
 //*****************************************************************************************************
 
+struct ScopedPtr
+{
+    explicit ScopedPtr(Expression *ptr = 0) : ptr_(ptr) {}
+
+    ~ScopedPtr()
+    {
+        delete ptr_;
+    }
+
+    //get — возвращает указатель, сохраненный внутри ScopedPtr (например, чтобы передать его в какую-то функцию);
+    Expression* get() const
+    {
+        return ptr_;
+    }
+
+    //release — забирает указатель у ScopedPtr и возвращает значение этого указателя, после вызова release ScopedPtr не должен освобождать память (например,
+    //чтобы вернуть этот указатель из функции);
+    Expression* release()
+    {
+        Expression * temp = ptr_;
+        ptr_ = 0;
+        return temp;
+    }
+
+    //reset — метод заставляет ScopedPtr освободить старый указатель, а вместо него захватить новый (например, чтобы переиспользовать ScopedPtr,
+    //так как оператор присваивания запрещен).
+    void reset(Expression *ptr = 0)
+    {
+        this->~ScopedPtr();
+        ptr_ = ptr;
+    }
+
+    Expression& operator*() const
+    {
+        return *ptr_;
+    }
+
+    Expression* operator->() const
+    {
+        return ptr_;
+    }
+
+
+private:
+    // запрещаем копирование ScopedPtr
+    ScopedPtr(const ScopedPtr&);
+    ScopedPtr& operator=(const ScopedPtr&);
+
+    Expression *ptr_;
+};
 
 
 int main()
 {
-
-    //Вам требуется реализовать функцию, которая принимает на вход два указателя на базовый класс Expression, и возвращает true, если оба указателя
-    //указывают на самом деле на объекты одного и того же класса, и false в противном случае (т.е. если оба указателя указывают на BinaryOperation, то
-    //возвращается true, а если один из них указывает на Number, а второй на BinaryOperation, то false).
-    /*Expression * sube1 = new BinaryOperation(new Number(4.5), '*', new Number(5));
-    Expression * sube2 = new BinaryOperation(new Number(4), '+', new Number(9));
-    Expression * num1 = new Number(6);
-    Expression * num2 = new Number(9);
-    cout << "bool = " << check_equals(sube1, sube2) << endl;
-    cout << "bool = " << check_equals(sube2, sube1) << endl;
-    cout << "bool = " << check_equals(num1, num2) << endl;
-    cout << "bool = " << check_equals(num2, num2) << endl;*/
 
     //*************************************************************************************************************************************************
     //Ваш класс должен печатать (используя std::cout) текстовое представление арифметического выражения. Т.е. для объекта класса Number он должен напечатать число,
     //которое в нем хранится, а для объекта класса BinaryOperation он должен напечатать левый операнд, затем операцию, а затем правый операнд.Учтите, что
     //операции + и - имеют меньший приоритет, чем операции * и /, т. е. возможно вам придется печатать дополнительные круглые скобки, чтобы сохранить правильный
     //порядок операций.
-    Expression * num = new Number(5);
+    /*Expression * num = new Number(5);
     PrintVisitor  visitor;
     num->visit(&visitor);
     cout << endl;
     Expression * expr = new BinaryOperation(new Number(1), '+', new Number(2));
     Expression * expr2 = new BinaryOperation(expr, '*', new Number(3));
     expr2->visit(&visitor);
-    cout << " = " << expr2->evaluate();
+    cout << " = " << expr2->evaluate();*/
 
+    //Реализуйте ScopedPtr, который будет работать с указателями на базовый класс Expression. В этом задании вам требуется реализовать методы get, release и reset,
+    //операторы * и -> так, как это было описано в предыдущем степе. А также реализуйте конструктор ScopedPtr от указателя на Expression.
+    //Подсказка: в качестве признака того, что ScopedPtr не хранит никакого указателя (после вызова release), используйте нулевой указатель, при этом вы можете
+    //явно проверить указатель в деструкторе, но делать это не обязательно, так как delete от нулевого указателя ничего не делает.
 
     return 0;
 }

@@ -6,19 +6,9 @@ using namespace std;
 
 
 //*************************************************************************************************************************************************
-struct Number;
-struct BinaryOperation;
-
-/*struct Visitor {
-    virtual void visitNumber(Number const * number) = 0;
-    virtual void visitBinaryOperation(BinaryOperation const * operation) = 0;
-    virtual ~Visitor() { }
-};*/
-
 struct Expression
 {
     virtual double evaluate() const = 0;
-    //virtual void visit(Visitor * vistitor) const = 0;
     virtual ~Expression() {}
 };
 
@@ -32,9 +22,6 @@ struct Number : Expression
     }
 
     double get_value() const { return value; }
-
-    //void visit(Visitor * visitor) const { visitor->visitNumber(this); }
-
 private:
     double value;
 };
@@ -66,81 +53,94 @@ struct BinaryOperation : Expression
     Expression const * get_left() const { return left; }
     Expression const * get_right() const { return right; }
     char get_op() const { return op; }
-
-    //void visit(Visitor * visitor) const { visitor->visitBinaryOperation(this); }
-
 private:
     Expression const * left;
     Expression const * right;
     char op;
 };
 
-/*struct PrintVisitor : Visitor {
-    void visitNumber(Number const * number)
-    {
-        cout << number->get_value();
-    }
-
-    void visitBinaryOperation(BinaryOperation const * bop)
-    {
-        cout << "(";
-        bop->get_left()->visit(this);
-        cout << " " << bop->get_op() << " ";
-        bop->get_right()->visit(this);
-        cout << ")";
-    }
-};*/
 //*****************************************************************************************************
-
-struct ScopedPtr
+struct SharedPtr
 {
-    explicit ScopedPtr(Expression *ptr = 0) : ptr_(ptr) {}
-
-    ~ScopedPtr()
+    explicit SharedPtr(Expression *ptr = 0) : ptr_(ptr)
     {
-        delete ptr_;
+        if(ptr != nullptr)
+        {
+            counter = new int;
+            *counter = 1;
+        }
+        else
+        {
+            counter = nullptr;
+        }
     }
 
-    //get — возвращает указатель, сохраненный внутри ScopedPtr (например, чтобы передать его в какую-то функцию);
+    ~SharedPtr()
+    {
+        clearPtr();
+    }
+
+    SharedPtr(const SharedPtr & other) : ptr_(other.ptr_)
+    {
+        if(ptr_ != nullptr)
+        {
+            counter = other.counter;
+            ++(*counter);
+        }
+        else
+        {
+            counter = nullptr;
+        }
+    }
+
+    SharedPtr& operator=(const SharedPtr & other)
+    {
+        if(this != &other)
+        {
+            clearPtr();
+            counter = other.counter;
+            if(counter != nullptr)
+            {
+                ++(*counter);
+            }
+            ptr_ = other.ptr_;
+
+        }
+        return *this;
+    }
     Expression* get() const
     {
         return ptr_;
     }
 
-    //release — забирает указатель у ScopedPtr и возвращает значение этого указателя, после вызова release ScopedPtr не должен освобождать память (например,
-    //чтобы вернуть этот указатель из функции);
-    Expression* release()
-    {
-        Expression * temp = ptr_;
-        ptr_ = 0;
-        return temp;
-    }
-
-    //reset — метод заставляет ScopedPtr освободить старый указатель, а вместо него захватить новый (например, чтобы переиспользовать ScopedPtr,
-    //так как оператор присваивания запрещен).
     void reset(Expression *ptr = 0)
     {
-        this->~ScopedPtr();
-        ptr_ = ptr;
+        *this = SharedPtr(ptr);
     }
-
     Expression& operator*() const
     {
         return *ptr_;
     }
-
     Expression* operator->() const
     {
         return ptr_;
     }
-
-
 private:
-    // запрещаем копирование ScopedPtr
-    ScopedPtr(const ScopedPtr&);
-    ScopedPtr& operator=(const ScopedPtr&);
 
-    Expression *ptr_;
+    void clearPtr()
+    {
+        if(counter != nullptr)
+        {
+            --(*counter);
+            if(*counter <= 0)
+            {
+                delete counter;
+                delete ptr_;
+            }
+        }
+    }
+    Expression * ptr_;
+    int * counter;
 };
 
 
@@ -161,11 +161,28 @@ int main()
     expr2->visit(&visitor);
     cout << " = " << expr2->evaluate();*/
 
-    //Реализуйте ScopedPtr, который будет работать с указателями на базовый класс Expression. В этом задании вам требуется реализовать методы get, release и reset,
-    //операторы * и -> так, как это было описано в предыдущем степе. А также реализуйте конструктор ScopedPtr от указателя на Expression.
-    //Подсказка: в качестве признака того, что ScopedPtr не хранит никакого указателя (после вызова release), используйте нулевой указатель, при этом вы можете
-    //явно проверить указатель в деструкторе, но делать это не обязательно, так как delete от нулевого указателя ничего не делает.
-
+    //Реализуйте класс SharedPtr как описано ранее. Задание немного сложнее, чем кажется на первый взгляд. Уделите особое внимание "граничным случаям" — нулевой
+    //указатель, присваивание самому себе, вызов reset на нулевом SharedPtr и прочее. Подсказка: возможно, вам понадобится завести вспомогательную структуру.
+    SharedPtr p1;
+    SharedPtr p2(new Number(6));
+    //SharedPtr p2(new BinaryOperation(new Number(5), '+', new Number(2)));
+    SharedPtr p3(new BinaryOperation(new Number(1), '+', new Number(2)));
+    SharedPtr p4(p2);
+    SharedPtr p5;
+    p5 = p2;
+    p5 = p4;
+    p1 = p5;
+    p3.reset(NULL);
+    p3 = p5;
+    p5.reset(NULL);
+    SharedPtr p6;
+    SharedPtr p7;
+    p7 = p7;
+    p7.reset(NULL);
+    p7.reset(new BinaryOperation(new Number(2), '+', new Number(3)));
+    SharedPtr p8(new BinaryOperation(new Number(4), '+', new Number(5)));
+    p8.reset(NULL);
+    p1 = p1;
     return 0;
 }
 

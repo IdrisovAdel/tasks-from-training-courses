@@ -5,9 +5,10 @@
 	<cstring>
 	<algorithm>
 
-1609956628 source:c:\users\pro\desktop\stepic\c++\structsandclasses\main.cpp
+1610128108 source:c:\users\pro\desktop\stepic\c++\structsandclasses\main.cpp
 	<cstddef>
 	<iostream>
 	<algorithm>
 	<new>
+	<string>
 

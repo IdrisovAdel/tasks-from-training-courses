@@ -4,45 +4,30 @@
 #include <new>
 #include <string>
 
-//using namespace std;
+// Параметры функции copy_n идут в следующем
+// порядке:
+//   1. целевой массив
+//   2. массив источник
+//   3. количество элементов, которые нужно
+//      скопировать
 
-struct ICloneable
+template <typename T, typename U>
+void copy_n(T * const to, U const * const from, size_t count)
 {
-	virtual ICloneable* clone() const = 0;
-	virtual ~ICloneable() { }
-};
-// Шаблон ValueHolder с типовым параметром T,
-// должен содержать одно открытое поле data_
-// типа T.
-//
-// В шаблоне ValueHolder должен быть определен
-// конструктор от одного параметра типа T,
-// который инициализирует поле data_.
-//
-// Шаблон ValueHolder должен реализовывать
-// интерфейс ICloneable, и возвращать указатель
-// на копию объекта, созданную в куче, из метода
-// clone.
-template <typename T>
-struct ValueHolder:ICloneable
-{
-    ValueHolder(const T & value) : data_(value)
-    {}
-    ValueHolder * clone() const
+    for(size_t iter = 0; iter < count; ++iter)
     {
-        return (new ValueHolder(*this));
+        to[iter] = static_cast<T>(from[iter]);
     }
-    T data_;
 };
+
 
 int main()
 {
-    /* Реализуйте шаблонную структуру ValueHolder с одним типовым параметром T, унаследованную от интерфейса ICloneable. Интерфейс ICloneable содержит
-    всего один виртуальный метод ICloneable* clone() const, который должен вернуть указатель на копию объекта, на котором он был вызван (объект должен быть
-    создан в куче). Шаблон ValueHolder, как говорит его название, хранит всего одно значение (назовите его data_) типа T (для типа T определен конструктор
-    копирования). Не делайте поле data_ закрытым (поэтому в данном случае мы явно пишем, что ValueHolder должна быть структурой).*/
-
-    ICloneable* first = new ValueHolder<int>(1313);
+    //Реализуйте функцию копирования элементов copy_n из массива источника типа U* в целевой массив типа T*, где T и U произвольные типы, для которых определено
+    //преобразование из U в T. На вход функция принимает два указателя и количество элементов, которые необходимо скопировать. Пример вызова функции copy_n:
+    int ints[] = {1, 2, 3, 4};
+    double doubles[4] = {};
+    copy_n(doubles, ints, 4); // теперь в массиве doubles содержатся элементы 1.0, 2.0, 3.0 и 4.0
 
     return 0;
 }

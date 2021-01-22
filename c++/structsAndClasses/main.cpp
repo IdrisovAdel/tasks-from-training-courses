@@ -4,30 +4,105 @@
 #include <new>
 #include <string>
 
-// Параметры функции copy_n идут в следующем
-// порядке:
-//   1. целевой массив
-//   2. массив источник
-//   3. количество элементов, которые нужно
-//      скопировать
-
-template <typename T, typename U>
-void copy_n(T * const to, U const * const from, size_t count)
+template <typename T>
+class Array
 {
-    for(size_t iter = 0; iter < count; ++iter)
+public:
+    explicit Array(size_t size, const T& value = T()) : arraySize(size), arrayPtr(static_cast<T*>(operator new[](arraySize * sizeof(T))))
     {
-        to[iter] = static_cast<T>(from[iter]);
+        for(size_t temp = 0; temp < arraySize; ++temp)
+        {
+            new (arrayPtr + temp) T(value);
+        }
+    }
+    //конструктор класса, который создает Array размера size, заполненный значениями value типа T. Если у класса нет конструктора по умолчанию, то второй
+    //аргумент этого конструктора обязателен.
+
+
+    Array() : arraySize(0), arrayPtr(0)
+    {}
+    //   конструктор класса, который можно вызвать без параметров. Должен создавать пустой Array.
+
+    Array(const Array & other): arraySize(other.arraySize), arrayPtr(static_cast<T*>(operator new[](arraySize * sizeof(T))))
+    {
+        for(size_t temp = 0; temp < arraySize; ++temp)
+        {
+            new (arrayPtr + temp) T(other.arrayPtr[temp]);
+        }
+    }
+    //конструктор копирования, который создает копию параметра. Для типа T оператор присваивания не определен.
+
+    ~Array()
+    {
+        for (size_t temp = 0; temp < arraySize; ++temp)
+        {
+            arrayPtr[temp].~T();
+        }
+        operator delete[] (arrayPtr);
+    }
+    //   деструктор, если он вам необходим.
+
+    Array& operator=(const Array & other)
+    {
+        std::swap(this->arrayPtr, other.arrayPtr);
+    }
+
+    size_t size() const
+    {
+        return arraySize;
+    }
+    T& operator[](size_t index)
+    {
+        return arrayPtr[index];
+    }
+
+    const T& operator[](size_t index) const
+    {
+        return arrayPtr[index];
+    }
+
+
+private:
+    size_t arraySize;
+    T * arrayPtr;
+};
+
+template <typename Type, typename Comp>
+Type minimum(Array<Type> const & array, Comp comparator)
+{
+    Type min = array[0];
+    for(size_t iter = 1; iter < array.size(); ++iter)
+    {
+        if(!comparator(min, array[iter])) min = array[iter];
+    }
+    return min;
+};
+
+bool less(int a, int b)
+{
+    return a < b;
+}
+
+struct Greater
+{
+    bool operator()(int a, int b) const
+    {
+        return b < a;
     }
 };
 
-
 int main()
 {
-    //Реализуйте функцию копирования элементов copy_n из массива источника типа U* в целевой массив типа T*, где T и U произвольные типы, для которых определено
-    //преобразование из U в T. На вход функция принимает два указателя и количество элементов, которые необходимо скопировать. Пример вызова функции copy_n:
-    int ints[] = {1, 2, 3, 4};
-    double doubles[4] = {};
-    copy_n(doubles, ints, 4); // теперь в массиве doubles содержатся элементы 1.0, 2.0, 3.0 и 4.0
+    //Реализуйте шаблонную функцию minimum, которая находит минимальный элемент, который хранится в экземпляре шаблонного класса Array, при этом типовой
+    //параметр шаблона Array может быть произвольным. Чтобы сравнивать объекты произвольного типа, на вход функции также будет передаваться компаратор,
+    //в качестве компаратора может выступать функция или объект класса с перегруженным оператором "()". Примеры вызова функции minimum:
+    Array<int> ints(3);
+    ints[0] = 10;
+    ints[1] = 2;
+    ints[2] = 15;
+    int min = minimum(ints, less); // в min должно попасть число 2
+    int max = minimum(ints, Greater()); // в max должно попасть число 15
+    std::cout << min << ' ' << max << std::endl;
 
     return 0;
 }

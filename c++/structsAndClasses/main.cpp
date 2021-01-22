@@ -67,42 +67,51 @@ private:
     T * arrayPtr;
 };
 
-template <typename Type, typename Comp>
-Type minimum(Array<Type> const & array, Comp comparator)
+// Можно заводить любые вспомогательные функции,
+// структуры или даже изменять сигнатуру flatten,
+// но при этом все примеры вызова из задания должны
+// компилироваться и работать.
+template <typename T>
+void flatten(const Array<T>& array, std::ostream& out)
 {
-    Type min = array[0];
-    for(size_t iter = 1; iter < array.size(); ++iter)
+    for(size_t iter1 = 0; iter1 < array.size(); ++iter1)
     {
-        if(!comparator(min, array[iter])) min = array[iter];
+        out << array[iter1] << ' ';
     }
-    return min;
-};
-
-bool less(int a, int b)
-{
-    return a < b;
 }
 
-struct Greater
+template <typename T>
+void flatten(const Array<Array<T> >& array, std::ostream& out)
 {
-    bool operator()(int a, int b) const
+    for(size_t iter = 0; iter < array.size(); ++iter)
     {
-        return b < a;
+        flatten(array[iter], out);
     }
-};
+}
+
 
 int main()
 {
-    //Реализуйте шаблонную функцию minimum, которая находит минимальный элемент, который хранится в экземпляре шаблонного класса Array, при этом типовой
-    //параметр шаблона Array может быть произвольным. Чтобы сравнивать объекты произвольного типа, на вход функции также будет передаваться компаратор,
-    //в качестве компаратора может выступать функция или объект класса с перегруженным оператором "()". Примеры вызова функции minimum:
-    Array<int> ints(3);
+    //Шаблонный класс Array может хранить объекты любого типа, для которого определён конструктор копирования, в том числе и другой Array, например,
+    //Array< Array<int> >. Глубина вложенности может быть произвольной. Напишите шаблонную функцию (или несколько) flatten, которая принимает на вход
+    //такой "многомерный" Array неизвестной заранее глубины вложенности и выводит в поток out через пробел все элементы, хранящиеся на самом нижнем уровне.
+    //Примеры работы функции flatten:
+    Array<int> ints(4, 0);
     ints[0] = 10;
-    ints[1] = 2;
-    ints[2] = 15;
-    int min = minimum(ints, less); // в min должно попасть число 2
-    int max = minimum(ints, Greater()); // в max должно попасть число 15
-    std::cout << min << ' ' << max << std::endl;
+    ints[1] = 20;
+    ints[2] = 30;
+    ints[3] = 40;
+    flatten(ints, std::cout); // выводит на экран строку "10 20"
+
+    Array< Array<int> > array_of_ints(2, ints);
+    flatten(array_of_ints, std::cout); // выводит на экран строку "10 20 10 20"
+
+    Array<double> doubles(10, 0.0);
+    flatten(doubles, std::cout); // работать должно не только для типа int*/
+
+    /*Array< Array<Array<int> > > array_of_ints1(2, array_of_ints);
+    flatten(array_of_ints, std::cout); // выводит на экран строку "10 20 10 20 10 20 10 20"*/
+
 
     return 0;
 }

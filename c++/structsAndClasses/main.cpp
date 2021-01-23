@@ -67,50 +67,38 @@ private:
     T * arrayPtr;
 };
 
-// ћожно заводить любые вспомогательные функции,
-// структуры или даже измен€ть сигнатуру flatten,
-// но при этом все примеры вызова из задани€ должны
-// компилироватьс€ и работать.
-template <typename T>
-void flatten(const Array<T>& array, std::ostream& out)
-{
-    for(size_t iter1 = 0; iter1 < array.size(); ++iter1)
-    {
-        out << array[iter1] << ' ';
-    }
-}
+struct Dummy { };
+typedef int type;
 
-template <typename T>
-void flatten(const Array<Array<T> >& array, std::ostream& out)
-{
-    for(size_t iter = 0; iter < array.size(); ++iter)
-    {
-        flatten(array[iter], out);
-    }
-}
+// ќпределите шаблон SameType с двум€ типовыми
+// параметрами. ¬ шаблоне должна быть определена
+// одна статическа€ константа типа bool с именем
+// value
 
+template <typename Type, typename Types>
+class SameType
+{
+public:
+    bool static const value = false;
+};
+
+template <typename Type>
+class SameType <Type, Type>
+{
+public:
+    bool static const value = true;
+};
 
 int main()
 {
-    //Ўаблонный класс Array может хранить объекты любого типа, дл€ которого определЄн конструктор копировани€, в том числе и другой Array, например,
-    //Array< Array<int> >. √лубина вложенности может быть произвольной. Ќапишите шаблонную функцию (или несколько) flatten, котора€ принимает на вход
-    //такой "многомерный" Array неизвестной заранее глубины вложенности и выводит в поток out через пробел все элементы, хран€щиес€ на самом нижнем уровне.
-    //ѕримеры работы функции flatten:
-    Array<int> ints(4, 0);
-    ints[0] = 10;
-    ints[1] = 20;
-    ints[2] = 30;
-    ints[3] = 40;
-    flatten(ints, std::cout); // выводит на экран строку "10 20"
-
-    Array< Array<int> > array_of_ints(2, ints);
-    flatten(array_of_ints, std::cout); // выводит на экран строку "10 20 10 20"
-
-    Array<double> doubles(10, 0.0);
-    flatten(doubles, std::cout); // работать должно не только дл€ типа int*/
-
-    /*Array< Array<Array<int> > > array_of_ints1(2, array_of_ints);
-    flatten(array_of_ints, std::cout); // выводит на экран строку "10 20 10 20 10 20 10 20"*/
+    //предлагаетс€ реализовать простой шаблон SameType. Ётот шаблон не содержит никаких методов, а только одно статическое константное поле типа bool,
+    //с именем value. Ўаблон принимает два типовых параметра, и если два типовых параметра шаблона €вл€ютс€ одним и тем же типом, то статическое поле value
+    //должно хранить значение true, в противном случае значение false.
+    std::cout << SameType<int, int>::value << std::endl; // выведет 1, т. е. true
+    std::cout << SameType<int, type>::value << std::endl; // 1, type == int
+    std::cout << SameType<int, int&>::value << std::endl; // 0, int и ссылка на int - различные типы
+    std::cout << SameType<Dummy, Dummy>::value << std::endl; // 1
+    std::cout << SameType<int, const int>::value << std::endl; // 0, const - часть типа*/
 
 
     return 0;

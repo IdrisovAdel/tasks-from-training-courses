@@ -67,39 +67,22 @@ private:
     T * arrayPtr;
 };
 
-struct Dummy { };
-typedef int type;
-
-// Определите шаблон SameType с двумя типовыми
-// параметрами. В шаблоне должна быть определена
-// одна статическая константа типа bool с именем
-// value
-
-template <typename Type, typename Types>
-class SameType
+template <typename Type, size_t size>
+size_t array_size(Type const (& array)[size])
 {
-public:
-    bool static const value = false;
-};
-
-template <typename Type>
-class SameType <Type, Type>
-{
-public:
-    bool static const value = true;
+    return sizeof(array) / sizeof(array[0]);
 };
 
 int main()
 {
-    //предлагается реализовать простой шаблон SameType. Этот шаблон не содержит никаких методов, а только одно статическое константное поле типа bool,
-    //с именем value. Шаблон принимает два типовых параметра, и если два типовых параметра шаблона являются одним и тем же типом, то статическое поле value
-    //должно хранить значение true, в противном случае значение false.
-    std::cout << SameType<int, int>::value << std::endl; // выведет 1, т. е. true
-    std::cout << SameType<int, type>::value << std::endl; // 1, type == int
-    std::cout << SameType<int, int&>::value << std::endl; // 0, int и ссылка на int - различные типы
-    std::cout << SameType<Dummy, Dummy>::value << std::endl; // 1
-    std::cout << SameType<int, const int>::value << std::endl; // 0, const - часть типа*/
-
+    //Реализуйте функцию array_size, которая возвращает размер массива, переданного в качестве параметра. Функция должна работать только для массивов!
+    //Т. е. если функции передать указатель, должна произойти ошибка компиляции.
+    int ints[] = {1, 2, 3, 4};
+    int *iptr = ints;
+    double doubles[] = {3.14};
+    int size = array_size(ints); // вернет 4
+    size = array_size(doubles); // вернет 1
+    //size = array_size(iptr); // тут должна произойти ошибка компиляции*/
 
     return 0;
 }
